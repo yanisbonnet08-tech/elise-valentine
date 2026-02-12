@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pour Elise ❤️</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    font-family:'Dancing Script', cursive;
+    color:white;
+    text-align:center;
+}
+
+/* 🌌 FOND GALAXIE */
+.background{
+    position:fixed;
+    width:100%;
+    height:100%;
+    background:linear-gradient(-45deg,#1a002b,#3a005f,#5f0a87,#ff4d6d);
+    background-size:400% 400%;
+    animation:gradientMove 12s ease infinite;
+    z-index:-3;
+}
+
+@keyframes gradientMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+
+/* ✨ ÉTOILES */
+.star{
+    position:absolute;
+    width:3px;
+    height:3px;
+    background:white;
+    border-radius:50%;
+    animation:twinkle 3s infinite alternate;
+}
+@keyframes twinkle{
+    from{opacity:0.3;}
+    to{opacity:1;}
+}
+
+/* CENTRAGE */
+.center{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+}
+
+/* 🔘 BOUTON ROND */
+#startBtn{
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    border:none;
+    background:#ff4d6d;
+    color:white;
+    font-size:26px;
+    cursor:pointer;
+    transition:0.4s;
+}
+#startBtn:hover{
+    transform:scale(1.1);
+    box-shadow:0 0 25px #ff4d6d;
+}
+
+h2{font-size:50px;}
+p{font-size:28px;}
+
+/* 📸 CAPTCHA */
+#captcha{display:none;padding-top:40px;}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(3,120px);
+    gap:15px;
+    justify-content:center;
+    margin-top:20px;
+}
+
+.grid img{
+    width:120px;
+    height:120px;
+    object-fit:cover;
+    border-radius:15px;
+    cursor:pointer;
+    border:3px solid transparent;
+    transition:0.3s;
+}
+
+.grid img:hover{
+    transform:scale(1.07);
+}
+
+.selected{
+    border:3px solid #ff4d6d;
+    box-shadow:0 0 20px #ff4d6d,0 0 40px #ff4d6d;
+    transform:scale(1.12);
+}
+
+#message{
+    margin-top:15px;
+    font-size:22px;
+    color:#ffd6e0;
+}
+
+/* 🌹 ROSES */
+.rose{
+    position:absolute;
+    font-size:40px;
+    animation:grow 6s forwards;
+}
+@keyframes grow{
+    from{transform:scale(0);}
+    to{transform:scale(10);}
+}
+.explosion{
+    animation:explode 2s forwards;
+}
+@keyframes explode{
+    to{transform:scale(25);opacity:0;}
+}
+
+/* QUESTION */
+#question,#final{display:none;}
+
+#yesBtn,#noBtn{
+    padding:12px 25px;
+    font-size:24px;
+    border-radius:30px;
+    border:none;
+    cursor:pointer;
+}
+
+#yesBtn{
+    background:#ff4d6d;
+    color:white;
+    margin:10px;
+}
+
+#noBtn{
+    background:#444;
+    color:white;
+    position:absolute;
+}
+
+/* 💖 CŒURS */
+.heart{
+    position:fixed;
+    top:-10px;
+    font-size:24px;
+    animation:fall linear forwards;
+}
+@keyframes fall{
+    to{transform:translateY(110vh);opacity:0;}
+}
+
+/* ✍️ TEXTE FINAL */
+.typewriter{
+    font-size:38px;
+    line-height:1.9em;
+    white-space:pre-line;
+    color:#ffd6e0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="background"></div>
+
+<!-- INTRO -->
+<div id="intro" class="center">
+    <h2>Elise…</h2>
+    <p>Depuis le premier instant…</p>
+    <p>Quelque chose brille différemment.</p>
+    <button id="startBtn">Clique ici</button>
+</div>
+
+<!-- CAPTCHA -->
+<div id="captcha">
+<h2>Petite vérification 😌</h2>
+<p>Choisis les photos de la personne que tu acceptes comme ton copain.</p>
+<div class="grid" id="grid"></div>
+<button onclick="checkSelection()">Valider</button>
+<div id="message"></div>
+</div>
+
+<!-- QUESTION -->
+<div id="question" class="center">
+    <h2>Veux-tu être ma valentine ?</h2>
+    <button id="yesBtn">Oui</button>
+    <button id="noBtn">Non</button>
+</div>
+
+<!-- FINAL -->
+<div id="final" class="center">
+    <div id="finalText" class="typewriter"></div>
+</div>
+
+<script>
+
+/* ✨ ÉTOILES */
+for(let i=0;i<150;i++){
+let star=document.createElement("div");
+star.className="star";
+star.style.left=Math.random()*window.innerWidth+"px";
+star.style.top=Math.random()*window.innerHeight+"px";
+star.style.animationDuration=(Math.random()*3+2)+"s";
+document.body.appendChild(star);
+}
+
+/* PHOTOS */
+const correctPhotos=["photo1.jpg","photo2.jpg","photo3.jpg","photo4.jpg"];
+const allPhotos=[
+"photo1.jpg","photo2.jpg","photo3.jpg","photo4.jpg",
+"neutre1.jpg","neutre2.jpg","neutre3.jpg","neutre4.jpg","neutre5.jpg"
+];
+
+let selected=[];
+
+const intro=document.getElementById("intro");
+const captcha=document.getElementById("captcha");
+const grid=document.getElementById("grid");
+
+document.getElementById("startBtn").onclick=()=>{
+intro.style.display="none";
+captcha.style.display="block";
+generateGrid();
+};
+
+function generateGrid(){
+grid.innerHTML="";
+selected=[];
+let shuffled=[...allPhotos].sort(()=>Math.random()-0.5);
+
+shuffled.forEach(photo=>{
+let img=document.createElement("img");
+img.src=photo;
+
+img.onclick=()=>{
+if(selected.includes(photo)){
+selected=selected.filter(p=>p!==photo);
+img.classList.remove("selected");
+}else if(selected.length<4){
+selected.push(photo);
+img.classList.add("selected");
+}
+};
+grid.appendChild(img);
+});
+}
+
+function checkSelection(){
+let message=document.getElementById("message");
+
+if(selected.length!==4){
+message.innerHTML="Il faut en choisir exactement 4 😉";
+return;
+}
+
+let correct=selected.every(p=>correctPhotos.includes(p));
+
+if(correct){
+captcha.style.display="none";
+startCinematic();
+}else{
+message.innerHTML="Hmm… ton cœur hésite 😏 recommence.";
+generateGrid();
+}
+}
+
+/* 🌹 ROSES */
+function startCinematic(){
+let count=0;
+const interval=setInterval(()=>{
+const rose=document.createElement("div");
+rose.className="rose";
+rose.innerHTML="🌹";
+rose.style.left=Math.random()*window.innerWidth+"px";
+rose.style.top=Math.random()*window.innerHeight+"px";
+document.body.appendChild(rose);
+count++;
+if(count>80){
+clearInterval(interval);
+setTimeout(explodeRoses,6000);
+}
+},80);
+}
+
+function explodeRoses(){
+document.querySelectorAll(".rose").forEach(r=>r.classList.add("explosion"));
+setTimeout(()=>{
+document.querySelectorAll(".rose").forEach(r=>r.remove());
+document.getElementById("question").style.display="block";
+positionNo();
+},2000);
+}
+
+/* 💘 NON IMPOSSIBLE */
+const noBtn=document.getElementById("noBtn");
+const yesBtn=document.getElementById("yesBtn");
+
+function positionNo(){
+noBtn.style.left=Math.random()*(window.innerWidth-120)+"px";
+noBtn.style.top=Math.random()*(window.innerHeight-60)+"px";
+}
+
+noBtn.addEventListener("mouseenter",positionNo);
+noBtn.addEventListener("click",positionNo);
+
+yesBtn.onclick=showFinal;
+
+/* 💖 FINAL */
+function showFinal(){
+document.getElementById("question").style.display="none";
+document.getElementById("final").style.display="block";
+typeWriter();
+startHearts();
+}
+
+function typeWriter(){
+const text=
+`Je t'aime mon organe,
+Je t'aime mon coffre,
+Je t'aime sentiment.
+
+
+Je t'aime Elise, mon amoureuse, ma princesse adorée, celle à qui tout mon cœur appartient. ❤️`;
+
+let i=0;
+function write(){
+if(i<text.length){
+document.getElementById("finalText").innerHTML+=text.charAt(i);
+i++;
+setTimeout(write,55);
+}
+}
+write();
+}
+
+function startHearts(){
+setInterval(()=>{
+const h=document.createElement("div");
+h.className="heart";
+h.innerHTML="❤️";
+h.style.left=Math.random()*window.innerWidth+"px";
+h.style.animationDuration=(Math.random()*4+3)+"s";
+document.body.appendChild(h);
+setTimeout(()=>h.remove(),7000);
+},150);
+}
+
+</script>
+
+</body>
+</html>
